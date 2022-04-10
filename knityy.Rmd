@@ -1,0 +1,268 @@
+---
+title: "IN-PATIENTS ASSESSMENT OF QUALITY OF NURSING CARE (MARCH 2022)"
+author: "QUALITY IMPROVEMENT UNIT (QIU)"
+date: "1st April, 2022"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(dplyr)
+library(ggplot2)
+```
+
+## SUMMARY
+
+This report highlights the feedback received from in-patients in the month of March 2022. A total of 154 questionnaires were administered out of which 102 were returned by the patients admitted in seven (7) wards namely:
+
+  * VIP
+  * Silver
+  * Grey
+  * Blue
+  * Pediatric
+  * Maternity
+  * General
+
+  The survey instrument is divided into two sections - biodata and research questions.
+  The questions on which this assessment was done are listed below:
+  
+   1. The ward (or room) cleanliness
+   2. The nurses responded to my (or my patient’s) needs effectively
+   3. Nurses knew enough about my (or my patient's) condition and treatment, 
+   4. The nurses discussed my (or my patient’s) condition and treatment with me in a way I       could              understand
+   5. The nurses responded to my (or my patient’s) requests in a reasonable time
+   6. I (or my patient) was kept as physically comfortable as I could expect to be
+   7. I (or my patient) got emotional support from the nurses during my stay.
+    
+  Each ward was assessed based on " 5-star rating" with 5 being the highest and 1 the lowest rating.
+  
+  The analysis of the feedback by the patients is plotted below.
+  
+```{r, echo=FALSE, fig.width=10, fig.height=10}
+
+nov_col = c("blue", "black", "grey", "pink", "gold") 
+feb_col = c("blue", "black", "dark grey", "green", "pink", "gold") 
+mycolour = c("blue", "black", "dark grey", "green", "pink", "grey", "goldenrod1")
+ 
+march_px = Px.Response.QIU <- read.csv("~/EpiData/Px Response QIU MARCH.csv")
+
+total =march_px %>% mutate(admission_ward = recode(admission_ward, 
+                                       '1' = 'Blue',
+                                       '2' ='Grey',
+                                       '4' = 'Silver',
+                                       '3' = 'Maternity',
+                                       '5' = 'Paediatrics',
+                                       '6' =  'General',
+                                       '7' = 'VIP')) %>%
+  select(admission_ward, Ward_Cleanliness, Effective_Nurse_Responses, 
+         Nurses_well_informed_on_condition_treatment , discussion_on_condition_treatment, 
+         Nurses_response_time, Physical_Comfort, Emotional_support) 
+
+obs =  c('Ward_Cleanliness', 'Effective_Nurse_Responses', 
+         'Nurses_well_informed_on_condition_treatment', 'discussion_on_condition_treatment', 
+         'Nurses_response_time', 'Physical_Comfort', 'Emotional_support')
+ 
+###### THE MEAN 
+tot_mn = total %>% 
+  mutate(ward_score = rowSums(select(., .dots = all_of(obs)))) %>%
+  select(admission_ward, ward_score) %>% 
+  group_by(admission_ward) %>% summarize(avg_score = mean(ward_score)/7)
+
+
+  total %>%
+  mutate(ward_score = rowSums(select(., .dots = all_of(obs)))) %>%
+   select(admission_ward, ward_score) %>% 
+   group_by(admission_ward) %>% summarize(avg_score = mean(ward_score)/7) %>%
+   ggplot(aes(x = reorder(x = admission_ward, -avg_score), y = avg_score,)) + 
+   geom_bar(stat = "identity", fill = mycolour) + 
+   theme_classic(base_size = 20) +
+   labs(title = "NURSING CARE FEEDBACK FOR MARCH 2022", x = "Ward", y ="Mean Score") +
+  geom_text(aes(label = paste(format(avg_score, digits = 2))), 
+            vjust = 1, size =7, nudge_y = -.5, color = 'white', fontface = 'bold')
+  
+march_px1 = total = march_px %>% mutate(admission_ward = recode(admission_ward, 
+                                       '1' = 'Blue',
+                                       '2' ='Grey',
+                                       '4' = 'Silver',
+                                       '3' = 'Maternity',
+                                       '5' = 'Paediatrics',
+                                       '6' =  'General',
+                                       '7' = 'VIP')) %>%
+  filter(input_date == "2022-04-01") %>%
+  select(admission_ward, Ward_Cleanliness, Effective_Nurse_Responses, 
+         Nurses_well_informed_on_condition_treatment , discussion_on_condition_treatment, 
+         Nurses_response_time, Physical_Comfort, Emotional_support) 
+
+
+```
+
+The above figured is an aggregation of the ratings of each of the wards on the 7 questions listed above.
+
+All the wards showed improvement in their rating by the inpatients. All the wards improved in their rating by 0.1 except for Grey ward which rose by 0.2 and climbed up from the fifth place in February to the 3rd place in March.
+
+In its entirety, Maternity got the highest rating by the patients on admission in their ward.
+
+Below is the rating breakdown.
+
+
+\newpage
+
+# BREAKDOWN BY RESEARCH QUESTION
+
+This section will focus on the patients feedback on the various questions.
+
+### 1. The ward (or room) cleanliness
+
+```{r pressure, echo=FALSE, fig.width=4, fig.height=4}
+
+total %>% select(admission_ward, Ward_Cleanliness) %>% group_by(admission_ward) %>% 
+  summarise(cleanliness = mean(Ward_Cleanliness)) %>% 
+  ggplot(aes(reorder(x = admission_ward, -cleanliness), y = cleanliness, fill = admission_ward)) + 
+  geom_col() +
+  geom_text(aes(label = paste(format(cleanliness, digits = 2,
+                                     show.legend = FALSE))), size = 4, color = "white", vjust=              2, fontface = 'bold') +
+  scale_fill_manual(values = mycolour, guide = "none") +
+  labs(x = "Ward", y ="Rating by Patients") +
+  theme_classic( base_size = 12) +
+  theme(axis.text.x = element_text(angle = 92))
+
+```
+
+
+The Grey ward was adjudged to be the cleanest ward in the month of March by the patients (4.6-star), closely followed by the Silver ward 4.5-star. The Pediatric ward held its position has the least clean ward for the third (3rd) month running.
+
+
+
+
+
+### 2. The nurses responded to my (or my patient’s) needs effectively
+
+
+```{r, echo=FALSE, fig.width=4, fig.height=4}
+
+total %>% select(admission_ward, Effective_Nurse_Responses) %>% group_by(admission_ward) %>% 
+  summarise(Response_Effectiveness = mean(Effective_Nurse_Responses)) %>% 
+  ggplot(aes(x = reorder(x = admission_ward, -Response_Effectiveness), 
+             y = Response_Effectiveness)) + 
+  geom_col(fill = mycolour) +
+  geom_text(aes(label = paste(format(Response_Effectiveness, digits = 2,
+                                     show.legend = FALSE))), size = 4, color = "white", vjust = 2, 
+                fontface = 'bold') +
+  scale_fill_manual(values = mycolour, guide = "none") +
+  theme_classic(base_size = 12) +
+  labs(x = "Ward", y ="Rating by Patients")+
+  theme(axis.text.x = element_text(angle = 92))
+```
+
+This above figure shows that the nurses in Maternity ward were adjudged by the patients to be exemplary in meeting the need of their patients.
+
+The VIP and Pediatric ward were ranked second and third respectively while General ward was the least ranked.
+
+
+### 3. The nurses knew enough about my (or my patient’s) condition and treatment		
+
+
+
+```{r ,echo=FALSE, fig.width=4, fig.height=4}
+total %>% select(admission_ward, Nurses_well_informed_on_condition_treatment) %>% 
+  group_by(admission_ward) %>% 
+  summarise(informed = mean(Nurses_well_informed_on_condition_treatment)) %>% 
+  ggplot(aes(x = reorder(x = admission_ward, -informed), 
+             y = informed)) + 
+  geom_col(fill = mycolour) +
+  geom_text(aes(label = paste(format(informed, digits = 2))), size = 4, color = "white", vjust = 2, 
+                fontface = 'bold') +
+  scale_fill_manual(values = mycolour, guide = "none") +
+  theme_classic(base_size = 10) +
+  labs(x = "Ward", y ="Rating by Patients")+
+  theme(axis.text.x = element_text(angle = 92))
+
+```
+
+The Maternity, Silver and Grey ward nurses were rated highly in their knowledge of the condition and the required care of their patients. VIP was rated as the least.
+
+
+### 4. The nurses discussed my (or my patient’s) condition and treatment with me in a way I could    understand.
+
+```{r, echo=FALSE, fig.width=4, fig.height=4}
+total %>% select(admission_ward, discussion_on_condition_treatment) %>% 
+  group_by(admission_ward) %>% 
+  summarise(discuss = mean(discussion_on_condition_treatment)) %>% 
+  ggplot(aes(x = reorder(x = admission_ward, -discuss), 
+             y = discuss)) + 
+  geom_col(fill = mycolour) +
+  geom_text(aes(label = paste(format(discuss, digits = 2))), vjust = 2, 
+                fontface = 'bold', color = 'white') +
+  scale_fill_manual(values = mycolour, guide = "none") +
+  theme_classic(base_size = 12) +
+  labs(x = "Ward", y ="Rating by Patients")+
+  theme(axis.text.x = element_text(angle = 92))
+
+```
+
+The Maternity, Grey and VIP ward nurses achieved effective communication with their patients in the month under review as the first, second and third.
+
+### 5. The nurses responded to my (or my patient’s) requests in a reasonable time
+```{r, echo=FALSE, fig.width=4, fig.height=4}
+total %>% select(admission_ward, Nurses_response_time) %>% 
+  group_by(admission_ward) %>% 
+  summarise(response_time = mean(Nurses_response_time)) %>% 
+  ggplot(aes(x = reorder(x = admission_ward, -response_time), 
+             y = response_time)) + 
+  geom_col(fill = mycolour) +
+  geom_text(aes(label = paste(format(response_time, digits = 2))), vjust = 2, 
+            fontface = 'bold', color = 'white') +
+  scale_fill_manual(values = mycolour, guide = "none") +
+  theme_classic(base_size = 12) +
+  labs( 
+       x = "Ward", y ="Rating by Patients")+
+  theme(axis.text.x = element_text(angle = 92))
+
+```
+
+The above graph shows that Grey, Maternity and Pediatrics ward nurses responded to their patients needs/attention at a relatively faster time. 
+
+### 6. I (or my patient) was kept as physically comfortable as I could to be
+
+```{r, echo=FALSE, fig.width=5,fig.height=4}
+total %>% select(admission_ward, Physical_Comfort) %>% 
+  group_by(admission_ward) %>% 
+  summarise(comfort = mean(Physical_Comfort)) %>% 
+  ggplot(aes(x = reorder(x = admission_ward, -comfort), 
+             y = comfort)) + 
+  geom_col(fill = mycolour) +
+  geom_text(aes(label = paste(format(comfort, digits = 2))), vjust = 2, 
+            fontface = 'bold', color = 'white') +
+  scale_fill_manual(values = mycolour, guide = "none") +
+  theme_classic(base_size = 12) +
+  labs( 
+       x = "Ward", y ="Rating by Patients")+
+  theme(axis.text.x = element_text(angle = 92))
+
+```
+
+The patients rated the Maternity and Silver ward Nurses highest in terms of making them the most physically comfortable ward in March. They were closely followed by the VIP and Grey wards.
+
+### 7. I (or my patient) got emotional support from the nurses during my stay
+
+```{r, echo=FALSE, fig.width=4, fig.height=4}
+total %>% select(admission_ward, Emotional_support) %>% 
+  group_by(admission_ward) %>% 
+  summarise(emo = mean(Emotional_support)) %>% 
+  ggplot(aes(x = reorder(x = admission_ward, -emo), 
+             y = emo)) + 
+  geom_col(fill = mycolour) +
+  geom_text(aes(label = paste(format(emo, digits = 2))), vjust = 2, 
+            fontface = 'bold', color = 'white') +
+  scale_fill_manual(values = mycolour, guide = "none") +
+  theme_classic(base_size = 12) +
+  labs( 
+       x = "Ward", y ="Rating by Patients")+
+  theme(axis.text.x = element_text(angle = 92))
+
+
+```
+
+In providing emotional support, the Grey ward was the most highly rated, followed by Maternity ward, then Pediatric ward.
